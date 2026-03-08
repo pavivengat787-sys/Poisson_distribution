@@ -30,11 +30,76 @@ The Poisson distribution is the discrete probability distribution of the number 
 
 # Program :
 
- 
+ import numpy as np
+import math
+from scipy.stats import chi2
+
+
+data = list(map(int, input("Enter space-separated frequency values: ").split()))
+
+N = len(data)
+max_val = max(data)
+
+
+observed_freq = [data.count(i) for i in range(max_val + 1)]
+X = list(range(max_val + 1))  # X values
+total_freq = sum(observed_freq)
+
+
+prob_obs = [f / total_freq for f in observed_freq]
+
+
+mean = np.inner(X, prob_obs)
+
+expected_probs = []
+expected_freq = []
+chi_sq_components = []
+
+print("\nX\tP(X=x)\tObs.Freq\tExp.Freq\tChi^2")
+print("-" * 50)
+
+for x in X:
+    # Poisson probability formula: P(X = x) = e^(-λ) * λ^x / x!
+    poisson_prob = math.exp(-mean) * (mean ** x) / math.factorial(x)
+    exp_freq = poisson_prob * total_freq
+    chi_sq = ((observed_freq[x] - exp_freq) ** 2) / exp_freq if exp_freq > 0 else 0
+
+    expected_probs.append(poisson_prob)
+    expected_freq.append(exp_freq)
+    chi_sq_components.append(chi_sq)
+
+    print(f"{x}\t{poisson_prob:.4f}\t{observed_freq[x]:>8}\t{exp_freq:>9.2f}\t{chi_sq:>7.2f}")
+
+
+calculated_chi_sq = sum(chi_sq_components)
+degrees_of_freedom = max_val  # df = k - 1 - 1 (mean estimated → one parameter)
+table_chi_sq = chi2.ppf(1 - 0.01, df=degrees_of_freedom)
+
+print("-" * 50)
+print(f"Calculated Chi-square value: {calculated_chi_sq:.4f}")
+print(f"Critical Chi-square value (1% LOS, df={degrees_of_freedom}): {table_chi_sq:.4f}")
+
+if calculated_chi_sq < table_chi_sq:
+    print("The data *fits* the Poisson distribution at 1% level of significance.")
+else:
+    print(" The data *does not fit* the Poisson distribution at 1% level of significance.")
 
 # Output : 
 
-
+X	P(X=x)	Obs.Freq	Exp.Freq	Chi^2
+--------------------------------------------------
+0	0.0213	       1	     0.43	   0.78
+1	0.0819	       2	     1.64	   0.08
+2	0.1577	       2	     3.15	   0.42
+3	0.2024	       5	     4.05	   0.22
+4	0.1948	       1	     3.90	   2.15
+5	0.1500	       5	     3.00	   1.33
+6	0.0962	       1	     1.92	   0.44
+7	0.0529	       3	     1.06	   3.56
+--------------------------------------------------
+Calculated Chi-square value: 8.9913  
+Critical Chi-square value (1% LOS, df=7): 18.4753  
+The data *fits* the Poisson distribution at 1% level of significance.
 
 # Results
 
