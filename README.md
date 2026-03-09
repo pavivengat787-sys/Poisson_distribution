@@ -29,84 +29,65 @@ The Poisson distribution is the discrete probability distribution of the number 
 ![image](https://user-images.githubusercontent.com/103921593/230282876-f4a5afbf-cac1-4648-a1b0-c78840638a8e.png)
 
 # Program :
+***
 
- import numpy as np
+import numpy as np
 import math
-from scipy.stats import chi2
 
+L = [int(i) for i in input("Enter data: ").split()]
 
-data = list(map(int, input("Enter space-separated frequency values: ").split()))
+N = len(L)
+M = max(L)
 
-N = len(data)
-max_val = max(data)
+X = []
+f = []
 
+for i in range(M+1):
+    c = 0
+    for j in range(N):
+        if L[j] == i:
+            c = c + 1
+    f.append(c)
+    X.append(i)
 
-observed_freq = [data.count(i) for i in range(max_val + 1)]
-X = list(range(max_val + 1))  # X values
-total_freq = sum(observed_freq)
+sf = np.sum(f)
 
+p = []
+for i in range(M+1):
+    p.append(f[i] / sf)
 
-prob_obs = [f / total_freq for f in observed_freq]
+mean = np.inner(X, p)
 
+p = []
+E = []
+xi = []
 
-mean = np.inner(X, prob_obs)
+print("X  P(X=x)  Obs.Fr  Exp.Fr   xi")
+print("--------------------------------")
 
-expected_probs = []
-expected_freq = []
-chi_sq_components = []
+for x in range(M+1):
+    p.append(math.exp(-mean) * (mean**x) / math.factorial(x))
+    E.append(p[x] * sf)
+    xi.append((f[x] - E[x])**2 / E[x])
 
-print("\nX\tP(X=x)\tObs.Freq\tExp.Freq\tChi^2")
-print("-" * 50)
+    print("%2d %7.3f %7.2f %7.2f %7.2f" % (x, p[x], f[x], E[x], xi[x]))
 
-for x in X:
-    # Poisson probability formula: P(X = x) = e^(-λ) * λ^x / x!
-    poisson_prob = math.exp(-mean) * (mean ** x) / math.factorial(x)
-    exp_freq = poisson_prob * total_freq
-    chi_sq = ((observed_freq[x] - exp_freq) ** 2) / exp_freq if exp_freq > 0 else 0
+print("--------------------------------")
 
-    expected_probs.append(poisson_prob)
-    expected_freq.append(exp_freq)
-    chi_sq_components.append(chi_sq)
+cal_chi2_sq = np.sum(xi)
+print("Calculated value of Chi-square is %4.2f" % cal_chi2_sq)
 
-    print(f"{x}\t{poisson_prob:.4f}\t{observed_freq[x]:>8}\t{exp_freq:>9.2f}\t{chi_sq:>7.2f}")
+table_chi2 = 13.28
+print("Table value of Chi-square at 1%% level is %4.2f" % table_chi2)
 
-
-calculated_chi_sq = sum(chi_sq_components)
-degrees_of_freedom = max_val  # df = k - 1 - 1 (mean estimated → one parameter)
-table_chi_sq = chi2.ppf(1 - 0.01, df=degrees_of_freedom)
-
-print("-" * 50)
-print(f"Calculated Chi-square value: {calculated_chi_sq:.4f}")
-print(f"Critical Chi-square value (1% LOS, df={degrees_of_freedom}): {table_chi_sq:.4f}")
-
-if calculated_chi_sq < table_chi_sq:
-    print("The data *fits* the Poisson distribution at 1% level of significance.")
+if cal_chi2_sq < table_chi2:
+    print("The given data can be fitted in Poisson Distribution at 1% LOS")
 else:
-    print(" The data *does not fit* the Poisson distribution at 1% level of significance.")
-
+    print("The given data cannot be fitted in Poisson Distribution at 1% LOS")
+***
 # Output : 
 
-X	P(X=x)	Obs.Freq	Exp.Freq	Chi^2
-
-0	0.0213	       1	     0.43	   0.78
-
-1	0.0819	       2	     1.64	   0.08
-
-2	0.1577	       2	     3.15	   0.42
-
-3	0.2024	       5	     4.05	   0.22
-
-4	0.1948	       1	     3.90	   2.15
-
-5	0.1500	       5	     3.00	   1.33
-
-6	0.0962	       1	     1.92	   0.44
-
-7	0.0529	       3	     1.06	   3.56
-
-Calculated Chi-square value: 8.9913  
-Critical Chi-square value (1% LOS, df=7): 18.4753  
-The data *fits* the Poisson distribution at 1% level of significance.
+<img width="744" height="519" alt="Screenshot (123)" src="https://github.com/user-attachments/assets/f210ff10-b5b6-4fd6-8de7-6c5fc2144618" />
 
 # Results
 
